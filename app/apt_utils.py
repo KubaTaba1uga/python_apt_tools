@@ -2,8 +2,8 @@ import typing
 
 import apt_pkg as pkg
 
-from app.str_utils import is_in_str
-from app.version_utils import cmp_versions
+from app.package_utils import cmp_packages
+from app.package_utils import cmp_versions
 from app.constants import PACKAGE_STATUS_MAP, PACKAGE_INSTALLED_STATUS
 
 
@@ -11,21 +11,25 @@ def is_package_installed(
     apt_pkg: pkg, package_name: str, package_version: typing.Optional[str] = None
 ) -> bool:
     """ Looks for a package among all cached packages."""
-    cache = apt_pkg.Cache()
+    user_package = find_package(apt_pkg, package_name, package_version)
+
+    return _is_package_installed(user_package) if user_package else False
+
+
+def find_package(
+    apt_pkg: pkg, package_name: str, package_version: typing.Optional[str] = None
+) -> typing.Optional[pkg.Package]:
+    """ Looks for a package among all cached packages."""
+    cache, user_package = apt_pkg.Cache(), {"name": package_name}
+
+    if package_version:
+        user_package["version"] = package_version
 
     for package in cache.packages:
-        if is_in_str(package_name, str(package.name)) and _is_package_installed(
-            package
-        ):
-            print(str(package.current_ver))
+        if cmp_packages(package, user_package) is True:
+            return package
 
-            if package_version is None:
-                return True
-
-            if cmp_versions(str(package.current_ver), package_version):
-                return True
-
-    return False
+    return None
 
 
 def _is_package_installed(package: pkg.Package) -> bool:
@@ -34,7 +38,7 @@ def _is_package_installed(package: pkg.Package) -> bool:
 
 
 def _is_installed_status(status_flag: int) -> bool:
-    """ Determines if package state is INSTALLED"""
+    """ Determines if package status is INSTALLED"""
     status_info = _recognize_package_status(status_flag)
 
     if status_info is PACKAGE_INSTALLED_STATUS:
