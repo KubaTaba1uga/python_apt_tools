@@ -6,6 +6,7 @@ import apt_pkg as pkg
 
 from app.apt_utils import is_package_installed
 from app.apt_utils import find_package
+from app.apt_utils import install_package
 
 
 @pytest.mark.parametrize(
@@ -49,3 +50,15 @@ def test_find_package_ver(apt_pkg, pkg_name, pkg_ver, expected_type):
     os_package = find_package(apt_pkg, pkg_name, pkg_ver)
 
     assert isinstance(os_package, expected_type) is True
+
+
+@pytest.mark.parametrize(
+    "pkg_name, expected",
+    [
+        ("dpkg", True),
+    ],  # ("non-exsisting-package99", False)]
+)
+def test_install_package(apt_pkg, pkg_name, expected):
+    install_package(apt_pkg, pkg_name)
+
+    assert False

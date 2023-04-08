@@ -17,13 +17,19 @@ def is_package_installed(
 
 
 def find_package(
-    apt_pkg: pkg, package_name: str, package_version: typing.Optional[str] = None
+    apt_pkg: pkg,
+    package_name: str,
+    package_version: typing.Optional[str] = None,
+    cache: typing.Optional[pkg.Cache] = None,
 ) -> typing.Optional[pkg.Package]:
     """ Looks for a package among all cached packages."""
-    cache, user_package = apt_pkg.Cache(), {"name": package_name}
+    user_package = {"name": package_name}
 
     if package_version:
         user_package["version"] = package_version
+
+    if cache is None:
+        cache = apt_pkg.Cache()
 
     for package in cache.packages:
         if cmp_packages(package, user_package) is True:
@@ -48,9 +54,23 @@ def _is_installed_status(status_flag: int) -> bool:
 
 
 def _recognize_package_status(status_flag: int) -> typing.Optional[str]:
-    """ Map numbers flags to descriptive strings. """
+    """ Map number status to descriptive string. """
     for key, value in PACKAGE_STATUS_MAP.items():
         if value == status_flag:
             return key
 
     return None
+
+
+def install_package(
+    apt_pkg: pkg, package_name: str, package_version: typing.Optional[str] = None
+):
+    cache = apt_pkg.Cache()
+    cache_mg = apt_pkg.DepCache(cache=cache)
+
+    user_package = find_package(apt_pkg, package_name, package_version, cache)
+
+    if not user_package:
+        return
+
+    cache_mg.mark_install(user_package)
