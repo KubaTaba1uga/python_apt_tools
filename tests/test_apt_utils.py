@@ -61,4 +61,4 @@ def test_find_package_ver(pkg_name, pkg_ver, expected_type):
 def test_install_package(apt_pkg, pkg_name, expected):
     install_package(apt_pkg, pkg_name)
 
-    # assert False
+    assert False

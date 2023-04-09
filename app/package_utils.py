@@ -19,7 +19,11 @@ def cmp_versions(os_verions: typing.List[apt.Version], user_ver: str) -> bool:
     """ False if os version is not compatibile with user's version. """
 
     for version in os_verions:
-        if version.version == user_ver:
+        if is_version_eq(version.version, user_ver):
             return True
 
     return False
+
+
+def is_version_eq(version_a: str, version_b: str) -> bool:
+    return version_a == version_b

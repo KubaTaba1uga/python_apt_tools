@@ -4,7 +4,7 @@ import apt
 
 from app.package_utils import cmp_packages
 from app.package_utils import cmp_versions
-from app.constants import PACKAGE_STATUS_MAP, PACKAGE_INSTALLED_STATUS
+from app.package_utils import is_version_eq
 
 
 def is_package_installed(
@@ -15,7 +15,9 @@ def is_package_installed(
     """ Looks for a package among all cached packages."""
     user_package = find_package(package_name, package_version, cache)
 
-    return _is_package_installed(user_package) if user_package else False
+    return (
+        _is_package_installed(user_package, package_version) if user_package else False
+    )
 
 
 def find_package(
@@ -42,9 +44,16 @@ def find_package(
     return None
 
 
-def _is_package_installed(package: apt.Package) -> bool:
+def _is_package_installed(
+    package: apt.Package, package_version: typing.Optional[str] = None
+) -> bool:
     """ Determines if package is installed."""
-    return package.installed is not None
+    result = package.installed is not None
+
+    if package_version is not None:
+        result = is_version_eq(package.installed, package_version)
+
+    return result
 
 
 # def _is_installed_status(status_flag: int) -> bool:
@@ -73,3 +82,7 @@ def install_package(package_name: str, package_version: typing.Optional[str] = N
 
     if not user_package:
         return
+
+    user_package.mark_install()
+
+    cache.commit()
