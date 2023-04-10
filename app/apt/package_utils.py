@@ -27,3 +27,13 @@ def cmp_versions(os_verions: typing.List[apt.Version], user_ver: str) -> bool:
 
 def is_version_eq(version_a: str, version_b: str) -> bool:
     return version_a == version_b
+
+
+def create_package_name_ver_str(
+    package_name: str, package_version: typing.Optional[str]
+):
+    return f"{package_name}=={package_version if package_version is not None else '*'}"
+
+
+def mark_install(pkg: apt.Package):
+    pkg.mark_install()
