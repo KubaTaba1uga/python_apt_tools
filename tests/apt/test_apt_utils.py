@@ -4,9 +4,10 @@ import pytest
 
 import apt
 
-from app.apt_utils import is_package_installed
-from app.apt_utils import find_package
-from app.apt_utils import install_package
+from app.apt.apt_utils import is_package_installed
+from app.apt.apt_utils import find_package
+from app.apt.apt_utils import install_package
+from app.errors import PackageNotFoundError
 
 
 @pytest.mark.parametrize(
@@ -22,7 +23,7 @@ def test_is_package_installed_no_ver(pkg_name, expected):
     "pkg_name, pkg_ver, expected",
     [("dpkg", "1.20.12", True), ("non-exsisting-package99", "1.1.1", False)],
 )
-@patch("app.apt_utils.cmp_versions", lambda _, __: True)
+@patch("app.apt.apt_utils.cmp_versions", lambda _, __: True)
 def test_is_package_installed_ver(pkg_name, pkg_ver, expected):
     received = is_package_installed(pkg_name, pkg_ver)
 
@@ -53,12 +54,24 @@ def test_find_package_ver(pkg_name, pkg_ver, expected_type):
 
 
 @pytest.mark.parametrize(
-    "pkg_name, expected",
-    [
-        ("dpkg", True),
-    ],  # ("non-exsisting-package99", False)]
+    "pkg_name",
+    [("dpkg")],
 )
-def test_install_package(apt_pkg, pkg_name, expected):
-    install_package(apt_pkg, pkg_name)
+def test_install_package_exsists(pkg_name):
+    with patch("app.apt.apt_utils.mark_install") as mark_install:
+        with patch("app.apt.apt_utils.commit_changes") as commit_changes:
+            install_package(pkg_name)
 
-    assert False
+    assert mark_install.call_count == 1
+    assert commit_changes.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "pkg_name",
+    [
+        ("non-exsisting-package99"),
+    ],
+)
+def test_install_package_not_exsists(pkg_name):
+    with pytest.raises(PackageNotFoundError):
+        install_package(pkg_name)
