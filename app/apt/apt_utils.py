@@ -20,7 +20,7 @@ def _create_cache_if_needed(func):
 
         is_cache_in_args, is_cache_in_kwargs = (
             any(is_cache(arg) for arg in args),
-            any(is_cache(kwarg) and key == "cache" for key, kwarg in kwargs.items()),
+            is_cache(kwargs.get("cache")),
         )
 
         if is_cache_in_kwargs is False:
@@ -74,12 +74,12 @@ def _is_package_installed(
     package: apt.Package, package_version: typing.Optional[str] = None
 ) -> bool:
     """Determines if package is installed."""
-    result = package.installed is not None
+    is_installed = package.installed is not None
 
     if package_version is not None:
-        result = is_version_eq(package.installed, package_version)
+        is_installed = is_version_eq(package.installed, package_version)
 
-    return result
+    return is_installed
 
 
 @_create_cache_if_needed
