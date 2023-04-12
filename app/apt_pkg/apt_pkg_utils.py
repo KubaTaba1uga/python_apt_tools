@@ -18,12 +18,11 @@ def _create_cache_if_needed(func):
             is_cache(kwargs.get("cache")),
         )
 
-        if is_cache_in_kwargs is False:
+        if is_cache_in_args is True or is_cache_in_kwargs is True:
+            pass
+        else:
             apt_pkg = create_apt_pkg()
             kwargs["cache"] = apt_pkg.Cache()
-
-        if is_cache_in_args is True:
-            args = tuple(arg for arg in args if is_cache(arg) is False)
 
         return func(*args, **kwargs)
 
