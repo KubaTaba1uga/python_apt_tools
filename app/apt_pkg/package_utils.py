@@ -41,6 +41,10 @@ def describe_package_selection_status(package: pkg.Package) -> str:
     raise ValueError(f"Unknown package selection status {_get_name(package)!s}")
 
 
+def mark_package_immutable(package: pkg.Package) -> str:
+    package.selected_state = pkg.SELSTATE_HOLD
+
+
 def _get_selection_status(package: pkg.Package) -> int:
     return package.selected_state
 

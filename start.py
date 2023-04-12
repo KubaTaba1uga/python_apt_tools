@@ -3,6 +3,7 @@
         Usage:
                 start.py install_package <package_name> [<package_version>]
                 start.py is_package_installed <package_name> [<package_version>]
+                start.py mark_package_immutable <package_name> [<package_version>]
 """
 import functools
 
@@ -11,69 +12,37 @@ from apt_pkg import Error as AptPkgError
 
 from app.apt.apt_utils import is_package_installed
 from app.apt.apt_utils import install_package
+from app.apt_pkg.apt_pkg_utils import mark_package_immutable
 from app.errors import PackageNotFoundError
 
-
-def print_result_dec(func):
-    @functools.wraps(func)
-    def _wrap(*args, **kwargs):
-        print()
-        _ = "*" * 50
-        print(_ + " RESULTS " + _)
-        return func(*args, **kwargs)
-
-    return _wrap
-
-
-def _print_is_installed_success(package_name, package_version, result):
-    if package_version is not None:
-        package_name = f"{package_name!s}=={package_version!s}"
-
-    is_installed = "installed" if result is True else "not installed"
-
-    print(f"{package_name!s} is {is_installed}.")
-
-
-def _print_is_installed_failure(package_name, package_version, error):
-    if package_version is not None:
-        package_name = f"{package_name!s}=={package_version!s}"
-
-    print(f"Could not check if {package_name!s} is installed. Reason: {error!s}.")
-
-
-@print_result_dec
-def _print_install_package_success(package_name, package_version, result):
-    is_installed = is_package_installed(package_name, package_version)
-
-    if package_version is not None:
-        package_name = f"{package_name!s}=={package_version!s}"
-
-    if is_installed is True:
-        print(f"{package_name!s} is now installed.")
-    else:
-        print(f"Unable to install {package_name!s}.")
-
-
-@print_result_dec
-def _print_install_package_failure(package_name, package_version, error):
-    if package_version is not None:
-        package_name = f"{package_name!s}=={package_version!s}"
-
-    print(f"Could not install {package_name!s}. Reason: {error!s}.")
+from start_utils import (
+    print_install_package_failure,
+    print_install_package_success,
+    print_is_installed_failure,
+    print_is_installed_success,
+    print_mark_package_immutable_success,
+    print_mark_package_immutable_failure,
+)
 
 
 APT_UTILS_ARGUMENTS_MAP = {
     "is_package_installed": {
         "function": is_package_installed,
-        "exceptions": [AptPkgError],
-        "success_function": _print_is_installed_success,
-        "failure_function": _print_is_installed_failure,
+        "exceptions": [],
+        "success_function": print_is_installed_success,
+        "failure_function": print_is_installed_failure,
     },
     "install_package": {
         "function": install_package,
         "exceptions": [PackageNotFoundError],
-        "success_function": _print_install_package_success,
-        "failure_function": _print_install_package_failure,
+        "success_function": print_install_package_success,
+        "failure_function": print_install_package_failure,
+    },
+    "mark_package_immutable": {
+        "function": mark_package_immutable,
+        "exceptions": [PackageNotFoundError],
+        "success_function": print_mark_package_immutable_success,
+        "failure_function": print_mark_package_immutable_failure,
     },
 }
 

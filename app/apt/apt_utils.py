@@ -23,11 +23,10 @@ def _create_cache_if_needed(func):
             is_cache(kwargs.get("cache")),
         )
 
-        if is_cache_in_kwargs is False:
+        if is_cache_in_args is True or is_cache_in_kwargs is True:
+            pass
+        else:
             kwargs["cache"]: apt.Cache = create_cache()
-
-        if is_cache_in_args is True:
-            args = tuple(arg for arg in args if is_cache(arg) is False)
 
         return func(*args, **kwargs)
 
@@ -55,6 +54,7 @@ def find_package(
     cache: typing.Optional[apt.Cache] = None,
 ) -> typing.Optional[apt.Package]:
     """Looks for a package among all cached packages."""
+
     user_package = {"name": package_name}
 
     if package_version:
@@ -86,7 +86,7 @@ def _is_package_installed(
 def install_package(
     package_name: str,
     package_version: typing.Optional[str] = None,
-    cache: typing.Optional[apt.Cache] = None,
+    cache: typing.Optional[apt.cache.Cache] = None,
 ):
 
     user_package = find_package(package_name, package_version, cache)

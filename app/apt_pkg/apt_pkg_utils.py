@@ -1,10 +1,12 @@
-mport functools
+import functools
 import typing
 
 import apt_pkg as pkg
 
 from app.errors import PackageNotFoundError
 from app.apt_pkg.package_utils import cmp_packages
+from app.apt_pkg.package_utils import mark_package_immutable
+from app.apt_pkg.cache_utils import commit_cache
 
 
 def _create_cache_if_needed(func):
@@ -57,6 +59,18 @@ def hold_package(
 
     if not user_package:
         raise PackageNotFoundError()
+
+    mark_package_hold(user_package)
+
+    commit_cache(cache)
+
+
+def is_apt_pkg(obj_: typing.Any) -> bool:
+    return obj_ is pkg
+
+
+def is_cache(obj_: typing.Any) -> bool:
+    return isinstance(obj_, pkg.Cache)
 
 
 def create_apt_pkg() -> pkg:
