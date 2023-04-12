@@ -1,8 +1,9 @@
-import functools
+mport functools
 import typing
 
 import apt_pkg as pkg
 
+from app.errors import PackageNotFoundError
 from app.apt_pkg.package_utils import cmp_packages
 
 
@@ -44,6 +45,18 @@ def find_package(
             return package
 
     return None
+
+
+@_create_cache_if_needed
+def hold_package(
+    package_name: str,
+    package_version: typing.Optional[str] = None,
+    cache: typing.Optional[pkg.Cache] = None,
+):
+    user_package = find_package(package_version, package_name, cache)
+
+    if not user_package:
+        raise PackageNotFoundError()
 
 
 def create_apt_pkg() -> pkg:

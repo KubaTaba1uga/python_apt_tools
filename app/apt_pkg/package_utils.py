@@ -3,6 +3,7 @@ import typing
 import apt_pkg as pkg
 
 from app.apt.apt_utils import is_version_eq
+from app.apt_pkg.data_structures import SELECTION_STATUS_MAP
 
 
 def cmp_packages(os_package: pkg.Package, user_package: dict) -> bool:
@@ -28,3 +29,21 @@ def cmp_versions(os_verions: typing.List[pkg.Version], user_ver: str) -> bool:
             return True
 
     return False
+
+
+def describe_package_selection_status(package: pkg.Package) -> str:
+    package_selection_status = _get_selection_status(package)
+
+    for description, value in SELECTION_STATUS_MAP.items():
+        if package_selection_status == value:
+            return description
+
+    raise ValueError(f"Unknown package selection status {_get_name(package)!s}")
+
+
+def _get_selection_status(package: pkg.Package) -> int:
+    return package.selected_state
+
+
+def _get_name(package: pkg.Package) -> str:
+    return package.name
