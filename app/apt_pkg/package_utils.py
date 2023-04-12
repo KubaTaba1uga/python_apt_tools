@@ -14,7 +14,7 @@ def cmp_packages(os_package: pkg.Package, user_package: dict) -> bool:
 
     if user_package.get("version") is not None and is_package_compatibile is True:
         is_package_compatibile = cmp_versions(
-            os_package.current_ver, user_package["version"]
+            os_package.version_list, user_package["version"]
         )
 
     return is_package_compatibile
